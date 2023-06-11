@@ -45,7 +45,7 @@ do
         sudo rm -rf $PWD/download
         break
     else
-        aria2c --max-connection-per-server=16 $linkk
+        aria2c --max-connection-per-server=16 '$linkk'
         sudo cp -rf $dldir/* $rclonedir
         sudo rm -rf mountpoint/*
         sudo rm -rf download/*
