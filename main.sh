@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function initt(){
-    if [ mount | grep -q "$PWD/ul" ]; then
+    if [[ $(mount | grep -q "$PWD/ul") ]]; then
         echo -e "Rclone is mounted! Unmounting!"
         kill $(pgrep -f rclone)
         fusermount -u "$PWD/ul/"
@@ -42,14 +42,14 @@ function dl_start(){
     echo -e "Enter link (Enter q to exit) : "
     read linkk
     echo $linkk
-    if [[ "$linkk" != "https://"* ]]; then
-        clear
-        echo -e "Not a link! Exiting! Bye"
-        exit
-    elif [[ "$linkk" == "q" ]]; then
+    if [[ "$linkk" == "q" ]]; then
         initt
         clear
         echo "Thanks for using my! Bye buddy!"
+        exit
+    elif [[ "$linkk" != "https://"* ]]; then
+        clear
+        echo -e "Not a link! Exiting! Bye"
         exit
     elif [[ "$linkk" == "https://drive.google.com/"* ]]; then 
         echo -e "\nGdrive link detected! Downloading..."
@@ -77,7 +77,7 @@ else
 fi
 choicee
 if [[ $choice == 1 ]]; then
-    if [ mount | grep -q "$PWD/ul" ]; then
+    if [[ $(mount | grep -q "$PWD/ul") ]]; then
         echo -e "Rclone is already mounted!"
     else
         rclone_mount
