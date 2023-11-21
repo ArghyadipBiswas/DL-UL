@@ -6,7 +6,7 @@ function initt(){
         kill $(pgrep -f rclone)
         fusermount -u "$PWD/ul/"
     fi
-    if [[ -d $PWD/dl ]]; then
+    if [[ -d $PWD/dl && -d $PWD/ul ]]; then
         rm -rf dl ul
     fi
 }
@@ -61,7 +61,7 @@ function dl_start(){
 }
 
 function rclone_up(){
-    cp "$PWD/dl/$custom_folder"* $PWD/ul/
+    cp "$PWD/dl/"* "$PWD/ul/$custom_folder"
     rm -rf $PWD/dl/*
 }
 
@@ -69,7 +69,7 @@ function rclone_up(){
 
 clear
 custom_folder="" # custom path of cloud
-if [[ -d $PWD/dl ]]; then
+if [[ -d $PWD/ul && -d $PWD/dl ]]; then
     echo "No need to create directory again!"
 else
     mkdir dl ul
