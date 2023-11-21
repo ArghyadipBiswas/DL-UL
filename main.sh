@@ -85,7 +85,7 @@ elif [[ $choice == 2 ]]; then
     echo "Work in progress! Currently in beta state!"
     dl_start
     python3 up.py $PWD/dl/*
-elif [[ $choice == 1 ]]; then
+elif [[ $choice == 3 ]]; then
     initt
     exit
 else
