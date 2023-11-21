@@ -1,10 +1,11 @@
 #!/bin/bash
 
 function initt(){
-    if [[ mount | grep -q "$PWD/ul" ]]; then
+    if [ mount | grep -q "$PWD/ul" ]; then
         echo -e "Rclone is mounted! Unmounting!"
         kill $(pgrep -f rclone)
         fusermount -u "$PWD/ul/"
+    fi
     if [[ -d $PWD/dl ]]; then
         rm -rf dl ul
     fi
@@ -68,11 +69,15 @@ function rclone_up(){
 
 clear
 custom_folder="" # custom path of cloud
-mkdir dl ul
-chmod 777 dl ul
+if [[ -d $PWD/dl ]]; then
+    echo "No need to create directory again!"
+else
+    mkdir dl ul
+    chmod 777 dl ul
+fi
 choicee
 if [[ $choice == 1 ]]; then
-    if [[ mount | grep -q "$PWD/ul" ]]; then
+    if [ mount | grep -q "$PWD/ul" ]; then
         echo -e "Rclone is already mounted!"
     else
         rclone_mount
