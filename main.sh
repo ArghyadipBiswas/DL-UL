@@ -63,6 +63,7 @@ function dl_start(){
 function rclone_up(){
     cp "$PWD/dl/"* "$PWD/ul/$custom_folder"
     rm -rf $PWD/dl/*
+    echo "Upload Done!"
 }
 
 #################### End of Functions #############
