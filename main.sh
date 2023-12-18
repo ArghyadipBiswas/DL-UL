@@ -66,6 +66,20 @@ function rclone_up(){
     echo "Upload Done!"
 }
 
+# function splitt(){
+#     mkdir ${1}tmp
+#     cp 
+# }
+
+function splitt(){
+    for filename in "$(find $PWD -type f)"; do
+        if [ $(wc -c < "$filename") -ge 2100483648 ]; then
+            echo "File is greater than 2GiB! Splitting"
+            split -d -b 2000M "$PWD/$filename" $filename
+        fi
+    done
+}
+
 #################### End of Functions #############
 
 clear
