@@ -66,18 +66,15 @@ function rclone_up(){
     echo "Upload Done!"
 }
 
-# function splitt(){
-#     mkdir ${1}tmp
-#     cp 
-# }
+function uploadd(){
+    find $PWD/dl -type f -exec python3 up.py {} \;
+}
 
 function splitt(){
-    for filename in "$(find $PWD -type f)"; do
-        if [ $(wc -c < "$filename") -ge 2000000000 ]; then
+    for filename in "$(find $PWD/dl -type f)"; do
+        if [[ $(wc -c < "$filename") -ge 2000000000 ]]; then
             echo "File is greater than 2GiB! Splitting"
-            find $PWD/dl -type f -size +2G -exec split -b 2000m {} {}_part \; -exec rm {} \;
-        elif [ $(wc -c < "$filename") -lt 2000000000 ]; then
-            find $PWD/dl -type f -exec python3 up.py {} \;
+            find $PWD/dl -type f -size +2G -exec split -b 2000m {} {}_part \; -exec rm {} \; -exec python3 up.py {} \;
         fi
     done
 }
@@ -107,6 +104,10 @@ elif [[ $choice == 2 ]]; then
     echo "Work in progress! Currently in beta state!"
     dl_start
     splitt
+    echo "Starting upload!"
+    sleep 2
+    uploadd
+    rm -rf $PWD/dl/*
     echo "Done! Cleaning"
 elif [[ $choice == 3 ]]; then
     initt
