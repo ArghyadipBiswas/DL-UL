@@ -73,9 +73,11 @@ function rclone_up(){
 
 function splitt(){
     for filename in "$(find $PWD -type f)"; do
-        if [ $(wc -c < "$filename") -ge 2100483648 ]; then
+        if [ $(wc -c < "$filename") -ge 2000000000 ]; then
             echo "File is greater than 2GiB! Splitting"
-            split -d -b 2000M "$PWD/$filename" $filename
+            find $PWD/dl -type f -size +2G -exec split -b 2000m {} {}_part \; -exec rm {} \;
+        elif [ $(wc -c < "$filename") -le 2000000000 ]; then
+            find $PWD/dl -type f -exec python3 up.py {} \;
         fi
     done
 }
@@ -104,7 +106,8 @@ if [[ $choice == 1 ]]; then
 elif [[ $choice == 2 ]]; then
     echo "Work in progress! Currently in beta state!"
     dl_start
-    python3 up.py $PWD/dl/*
+    splitt
+    echo "Done! Cleaning"
 elif [[ $choice == 3 ]]; then
     initt
     exit
