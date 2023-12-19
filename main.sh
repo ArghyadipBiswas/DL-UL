@@ -13,7 +13,7 @@ function initt(){
 
 function choicee(){
     while true; do
-        echo -e "Where you want to upload ?\n    1.Cloud (Gdrive, OneDrive etc)\n    2.Telegram (Beta)\n    3.Exit"
+        echo -e "Where you want to upload ?\n    1.Cloud (Gdrive, OneDrive etc)\n    2.Telegram\n    3.Exit"
         read choice
         if [[ $choice == 1 || $choice == 2 || $choice == 3 ]]; then
             break
@@ -101,7 +101,6 @@ if [[ $choice == 1 ]]; then
         rclone_up
     done
 elif [[ $choice == 2 ]]; then
-    echo "Work in progress! Currently in beta state!"
     dl_start
     splitt
     echo "Starting upload!"
