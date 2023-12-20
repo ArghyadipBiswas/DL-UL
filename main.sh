@@ -74,7 +74,7 @@ function splitt(){
     for filename in "$(find $PWD/dl -type f)"; do
         if [[ $(wc -c < "$filename") -ge 2000000000 ]]; then
             echo "File is greater than 2GiB! Splitting"
-            find $PWD/dl -type f -size +2G -exec split -b 2000m {} {}_part \; -exec rm {} \; -exec python3 up.py {} \;
+            find $PWD/dl -type f -size +2G -exec split -b 2000m {} {}_part \; -exec rm {} \;
         fi
     done
 }
