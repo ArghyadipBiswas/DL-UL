@@ -72,7 +72,7 @@ function tg_upload(){
 #====================================================================================
 
 clear
-custom_folder="testing/" # custom path of cloud
+custom_folder="" # custom path of cloud
 
 if [[ -d $PWD/dl ]]; then
     echo "No need to create directory again!"
