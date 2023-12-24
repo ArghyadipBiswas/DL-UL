@@ -13,11 +13,9 @@ function choicee(){
 }
 
 function dl_start(){
-    clear
     echo -e "Enter link (Enter any key to exit): "
     read linkk
-    if [[ "$linkk" != "https://"* ]]; then
-        clear
+    if [[ "$linkk" != "https://"* && "$linkk" != "magnet"* ]]; then
         echo -e "Not a link! Exiting! Bye"
         exit
     elif [[ "$linkk" == "https://drive.google.com/"* ]]; then 
@@ -40,7 +38,7 @@ function dl_start(){
 
 function initt(){
     if [[ -d $PWD/dl ]]; then
-        rm -rf dl ul
+        rm -rf dl
     fi
 }
 
@@ -59,7 +57,6 @@ function rclone_setup(){
 }
 
 function rclone_up(){
-    # clear
     rclone --config=$PWD/rclone.conf move --transfers=10 --buffer-size 256M -P $PWD/dl/ $1\/$custom_folder
     rm -rf $PWD/dl/*
     echo "Upload Done!"
@@ -76,12 +73,13 @@ function splitt(){
 
 function tg_upload(){
     find $PWD/dl -type f -exec python3 up.py {} \;
+    rm -rf $PWD/dl/*
 }
 
 #====================================================================================
 
 clear
-custom_folder="testing/" # custom path of cloud
+custom_folder="" # custom path of cloud
 
 if [[ -d $PWD/dl ]]; then
     echo "No need to create directory again!"
