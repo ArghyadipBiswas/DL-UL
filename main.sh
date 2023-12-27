@@ -88,12 +88,12 @@ function show_zip_status() {
 
 function tg_upload() {
     find "$PWD/dl" -type f -exec python3 up.py {} \;
-    rm -rf "$PWD/dl/*"
+    rm -rf "$PWD/dl/"*
 }
 
 function zipper() {
-    zip -j "$PWD/zipped/$custom_filename.zip" "$PWD/dl/*"
-    rm -rf "$PWD/dl/*"
+    zip -j "$PWD/zipped/$custom_filename.zip" "$PWD/dl/"*
+    rm -rf "$PWD/dl/"*
     mv "$PWD/zipped/*" "$PWD/dl/"
 }
 
