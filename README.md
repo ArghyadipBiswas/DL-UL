@@ -5,7 +5,7 @@ This tool can upload files tocloud and telegram from links.
 
 Setup tutorial 
 ```
-git clone https://github.com/ArghyadipBiswas/DL-UL && cd DL-UL && chmod 777 * && ./install_dependencies.sh
+git clone https://github.com/ArghyadipBiswas/DL-UL && cd DL-UL && chmod 777 * && ./setup_debian.sh
 ./main.sh
 ```
 # Settings Credentials
