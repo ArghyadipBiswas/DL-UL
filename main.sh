@@ -1,29 +1,30 @@
 #!/bin/bash
 
-function choicee(){
+custom_folder=""           # custom path of cloud
+custom_filename="zipped"   # custom filename for zipped files
+zip_status="0"             # set 1 for zip, 0 for not zip
+unzip_status="0"           # set 1 for unzip, 0 for not unzip
+
+function choicee() {
     while true; do
-        echo -e "Where you want to upload ?\n    1.Cloud (Gdrive, OneDrive etc)\n    2.Telegram\n    3.Exit"
-        read choice
-        if [[ $choice == 1 || $choice == 2 || $choice == 3 ]]; then
-            break
-        else
-            echo -e "\nInvalid input. Please enter a number between 1-3"
-        fi
+        echo -e "Where you want to upload?\n    1. Cloud (Gdrive, OneDrive etc)\n    2. Telegram\n    3. Settings\n    4. Exit"
+        read -p "Choose an option (1-4): " choice
+        [[ $choice =~ ^[1-4]$ ]] && break || echo -e "\nInvalid input. Please enter a number between 1-4"
     done
 }
 
-function dl_start(){
-    echo -e "Enter link (Enter any key to exit): "
+function dl_start() {
+    printf "Enter link (Enter any key to exit): "
     read linkk
     if [[ "$linkk" != "https://"* && "$linkk" != "magnet"* ]]; then
         echo -e "Not a link! Exiting! Bye"
         exit
     elif [[ "$linkk" == "https://drive.google.com/"* ]]; then 
-        if echo "$linkk" | grep -q "folder"; then
+        if grep -q "folder" <<< "$linkk"; then
             echo -e "\n\nGdrive folder detected! Downloading!"
             gdown --folder -O "$PWD/dl/" "$linkk"
-        elif echo "$linkk" | grep -q "file"; then
-            file_id=$(echo $linkk | sed -n 's/.*\/d\/\([^\/]*\)\/.*/\1/p')
+        elif grep -q "file" <<< "$linkk"; then
+            file_id=$(sed -n 's/.*\/d\/\([^\/]*\)\/.*/\1/p' <<< "$linkk")
             echo -e "\n\nGdrive single file detected! Downloading!"
             linkk="https://drive.google.com/uc?id=$file_id"
             gdown -O "$PWD/dl/" "$linkk"
@@ -32,81 +33,136 @@ function dl_start(){
         fi
     else
         TRACKERS=$(curl -Ns https://raw.githubusercontent.com/ngosang/trackerslist/master/trackers_all_udp.txt | awk '$1' | tr '\n' ',')
-        aria2c --allow-overwrite=true --bt-enable-lpd=true --bt-max-peers=0 --bt-tracker="[$TRACKERS]" --check-certificate=false --follow-torrent=mem --max-connection-per-server=16 --max-overall-upload-limit=1K -d "$PWD/dl/" "$linkk"  
+        aria2c --allow-overwrite=true --bt-enable-lpd=true --bt-max-peers=0 --bt-tracker="[$TRACKERS]" \
+            --check-certificate=false --follow-torrent=mem --max-connection-per-server=16 --max-overall-upload-limit=1K \
+            --peer-agent=qBittorrent/4.3.6 --peer-id-prefix=-qB4360- --seed-time=0 --bt-tracker-connect-timeout=300 \
+            --bt-stop-timeout=1200 --user-agent=qBittorrent/4.3.6 -d "$PWD/dl/" "$linkk"  
     fi
 }
 
-function initt(){
-    if [[ -d $PWD/dl ]]; then
-        rm -rf dl
-    fi
+function initt() {
+    [[ -d $PWD/dl ]] && rm -rf dl zipped unzipped
 }
 
-function rclone_setup(){
-    if [ -e $PWD/rclone.conf ]; then 
-        echo -e "Rclone config file found !\n"
-    else
-        echo "Enter rclone config link : "
-        read rclone_link
-        aria2c $rclone_link
-    fi
+function rclone_setup() {
+    [[ -e $PWD/rclone.conf ]] || {
+        read -p "Enter rclone config link: " rclone_link
+        aria2c "$rclone_link"
+    }
     echo -e "Enter where you want to upload: \n==================="
     rclone --config=$PWD/rclone.conf listremotes
     echo -e "===================\n"
-    read remote
+    read -p "Enter remote destination: " remote
 }
 
-function rclone_up(){
-    rclone --config=$PWD/rclone.conf move --transfers=10 --buffer-size 256M -P $PWD/dl/ $1\/$custom_folder
-    rm -rf $PWD/dl/*
+function rclone_up() {
+    rclone --config=$PWD/rclone.conf move --transfers=10 --buffer-size 256M -P "$PWD/dl/" "$1/$custom_folder"
+    rm -rf "$PWD/dl/*"
     echo "Upload Done!"
 }
 
-function splitt(){
-    for filename in "$(find $PWD/dl -type f)"; do
-        if [[ $(wc -c < "$filename") -ge 2000000000 ]]; then
+function splitt() {
+    find "$PWD/dl" -type f -print0 | while IFS= read -r -d '' filename; do
+        if (( $(wc -c < "$filename") >= 2000000000 )); then
             echo "File is greater than 2GiB! Splitting"
-            find $PWD/dl -type f -size +2G -exec split -b 2000m {} {}_part \; -exec rm {} \;
+            dir=$(dirname "$filename")
+            base=$(basename "$filename")
+            cd "$dir"
+            split -b 2000m "$base" "$base"_part
+            rm "$base"
+            cd -
         fi
     done
 }
 
-function tg_upload(){
-    find $PWD/dl -type f -exec python3 up.py {} \;
-    rm -rf $PWD/dl/*
+function show_zip_status() {
+    clear
+    if ((zip_status == 1)); then
+        echo -e "\n###### Change Settings ######\n######Choose to toggle######\n\n1. Zipping (ON)\n2. Unzipping (OFF)\n3. Exit"
+    elif ((unzip_status == 1)); then
+        echo -e "\n###### Change Settings ######\n######Choose to toggle######\n\n1. Zipping (OFF)\n2. Unzipping (ON)\n3. Exit"
+    else
+        echo -e "\n###### Change Settings ######\n######Choose to toggle######\n\n1. Zipping (OFF)\n2. Unzipping (OFF)\n3. Exit"
+    fi
+}
+
+function tg_upload() {
+    find "$PWD/dl" -type f -exec python3 up.py {} \;
+    rm -rf "$PWD/dl/*"
+}
+
+function zipper() {
+    zip -j "$PWD/zipped/$custom_filename.zip" "$PWD/dl/*"
+    rm -rf "$PWD/dl/*"
+    mv "$PWD/zipped/*" "$PWD/dl/"
+}
+
+function unzipper() {
+    cd "$PWD/dl/"
+    for zip_file in *.zip; do
+        if [[ -f "$zip_file" ]]; then
+            echo "Unzipping $zip_file..."
+            unzip "$zip_file" -d "${zip_file%.zip}" && rm -rf "$zip_file"
+            echo "Done."
+        fi
+    done
+    cd -
 }
 
 #====================================================================================
 
-clear
-custom_folder="" # custom path of cloud
+while true; do
+    clear
+    [[ -d $PWD/dl && -d zipped && -d unzipped ]] || mkdir dl zipped unzipped && chmod 777 dl zipped unzipped
 
-if [[ -d $PWD/dl ]]; then
-    echo "No need to create directory again!"
-else
-    mkdir dl
-    chmod 777 dl
-fi
-choicee
-if [[ $choice == 1 ]]; then
-    rclone_setup
-    while true; do
-        dl_start
-        rclone_up $remote
-    done
-elif [[ $choice == 2 ]]; then
-    while true; do
-        dl_start
-        splitt
-        echo "Starting upload!"
-        sleep 1
-        tg_upload
-        rm -rf $PWD/dl/*
-        echo "Done! Cleaning"
-    done
-elif [[ $choice == 3 ]]; then
-    initt
-    exit
-else
-    echo "Bruh"
-fi
+    choicee
+    case $choice in
+        1)
+            rclone_setup
+            while true; do
+                dl_start
+                [[ $zip_status == 1 && $unzip_status != 1 ]] && zipper
+                [[ $unzip_status == 1 && $zip_status != 1 ]] && unzipper
+                rclone_up "$remote"
+            done
+            ;;
+        2)
+            while true; do
+                dl_start
+                [[ $zip_status == 1 && $unzip_status != 1 ]] && zipper
+                [[ $unzip_status == 1 && $zip_status != 1 ]] && unzipper
+                splitt
+                echo "Starting upload!"
+                sleep 1
+                tg_upload
+                rm -rf "$PWD/dl/*"
+                echo "Done! Cleaning"
+            done
+            ;;
+        3)
+            while true; do
+                show_zip_status
+                read -p "Choose: " zipchoice
+                case $zipchoice in
+                    1)
+                        ((zip_status == 1)) && zip_status=0 || zip_status=1
+                        ;;
+                    2)
+                        ((unzip_status == 1)) && unzip_status=0 || unzip_status=1
+                        ;;
+                    3)
+                        break
+                        ;;
+                esac
+            done
+            ;;
+        4)
+            initt
+            exit
+            ;;
+        *)
+            echo "Invalid choice. Exiting..."
+            exit
+            ;;
+    esac
+done
