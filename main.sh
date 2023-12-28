@@ -4,6 +4,7 @@ custom_folder=""           # custom path of cloud
 custom_filename="zipped"   # custom filename for zipped files
 zip_status="0"             # set 1 for zip, 0 for not zip
 unzip_status="0"           # set 1 for unzip, 0 for not unzip
+tg_status="0"
 
 function choicee() {
     while true; do
@@ -64,7 +65,7 @@ function rclone_up() {
 
 function splitt() {
     find "$PWD/dl" -type f -print0 | while IFS= read -r -d '' filename; do
-        if (( $(wc -c < "$filename") >= 2000000000 )); then
+        if (( $(wc -c < "$filename") >= 2097152000 )); then
             echo "File is greater than 2GiB! Splitting"
             dir=$(dirname "$filename")
             base=$(basename "$filename")
@@ -80,25 +81,15 @@ function show_zip_status() {
     clear
     if ((zip_status == 1)); then
         echo -e "\n###### Change Settings ######\n###### Choose to toggle ######\n\n    1. Zipping (ON)\n    2. Unzipping (OFF)"
-        if ((tg_status == 1)); then
-            echo -e "    3. Telegram upload as MEDIA\n    4. Exit"
-        elif ((tg_status == 0)); then
-            echo -e "    3. Telegram upload as DOCUMENT\n    4. Exit"
-        fi
     elif ((unzip_status == 1)); then
         echo -e "\n###### Change Settings ######\n###### Choose to toggle ######\n\n    1. Zipping (OFF)\n    2. Unzipping (ON)"
-        if ((tg_status == 1)); then
-            echo -e "    3. Telegram upload as MEDIA\n    4. Exit"
-        elif ((tg_status == 0)); then
-            echo -e "    3. Telegram upload as DOCUMENT\n    4. Exit"
-        fi
     else
         echo -e "\n###### Change Settings ######\n###### Choose to toggle ######\n\n    1. Zipping (OFF)\n    2. Unzipping (OFF)"
-        if ((tg_status == 1)); then
-            echo -e "    3. Telegram upload as MEDIA\n    4. Exit"
-        elif ((tg_status == 0)); then
-            echo -e "    3. Telegram upload as DOCUMENT (Default)\n    4. Exit"
-        fi
+    fi
+    if ((tg_status == 1)); then
+        echo -e "    3. Telegram upload as MEDIA\n    4. Exit"
+    elif ((tg_status == 0)); then
+        echo -e "    3. Telegram upload as DOCUMENT (Default)\n    4. Exit"
     fi
 }
 
@@ -160,18 +151,10 @@ while true; do
                 show_zip_status
                 read -p "Choose: " zipchoice
                 case $zipchoice in
-                    1)
-                        ((zip_status == 1)) && zip_status=0 || zip_status=1
-                        ;;
-                    2)
-                        ((unzip_status == 1)) && unzip_status=0 || unzip_status=1
-                        ;;
-                    3)
-                        ((tg_status == 1)) && tg_status=0 || tg_status=1
-                        ;;
-                    4)
-                        break
-                        ;;
+                    1) ((zip_status == 1)) && zip_status=0 || zip_status=1 ;;
+                    2) ((unzip_status == 1)) && unzip_status=0 || unzip_status=1 ;;
+                    3) ((tg_status == 1)) && tg_status=0 || tg_status=1 ;;
+                    4) break ;;
                 esac
             done
             ;;
