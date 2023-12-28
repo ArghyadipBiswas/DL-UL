@@ -7,6 +7,7 @@ unzip_status="0"           # set 1 for unzip, 0 for not unzip
 
 function choicee() {
     while true; do
+        echo -e "WELCOME" | figlet
         echo -e "Where you want to upload?\n    1. Cloud (Gdrive, OneDrive etc)\n    2. Telegram\n    3. Settings\n    4. Exit"
         read -p "Choose an option (1-4): " choice
         [[ $choice =~ ^[1-4]$ ]] && break || echo -e "\nInvalid input. Please enter a number between 1-4"
@@ -78,16 +79,31 @@ function splitt() {
 function show_zip_status() {
     clear
     if ((zip_status == 1)); then
-        echo -e "\n###### Change Settings ######\n######Choose to toggle######\n\n1. Zipping (ON)\n2. Unzipping (OFF)\n3. Exit"
+        echo -e "\n###### Change Settings ######\n###### Choose to toggle ######\n\n    1. Zipping (ON)\n    2. Unzipping (OFF)"
+        if ((tg_status == 1)); then
+            echo -e "    3. Telegram upload as MEDIA\n    4. Exit"
+        elif ((tg_status == 0)); then
+            echo -e "    3. Telegram upload as DOCUMENT\n    4. Exit"
+        fi
     elif ((unzip_status == 1)); then
-        echo -e "\n###### Change Settings ######\n######Choose to toggle######\n\n1. Zipping (OFF)\n2. Unzipping (ON)\n3. Exit"
+        echo -e "\n###### Change Settings ######\n###### Choose to toggle ######\n\n    1. Zipping (OFF)\n    2. Unzipping (ON)"
+        if ((tg_status == 1)); then
+            echo -e "    3. Telegram upload as MEDIA\n    4. Exit"
+        elif ((tg_status == 0)); then
+            echo -e "    3. Telegram upload as DOCUMENT\n    4. Exit"
+        fi
     else
-        echo -e "\n###### Change Settings ######\n######Choose to toggle######\n\n1. Zipping (OFF)\n2. Unzipping (OFF)\n3. Exit"
+        echo -e "\n###### Change Settings ######\n###### Choose to toggle ######\n\n    1. Zipping (OFF)\n    2. Unzipping (OFF)"
+        if ((tg_status == 1)); then
+            echo -e "    3. Telegram upload as MEDIA\n    4. Exit"
+        elif ((tg_status == 0)); then
+            echo -e "    3. Telegram upload as DOCUMENT (Default)\n    4. Exit"
+        fi
     fi
 }
 
 function tg_upload() {
-    find "$PWD/dl" -type f -exec python3 up.py "{}" \;
+    find "$PWD/dl" -type f -exec python3 up.py "{}" $tg_status \;
     rm -rf "$PWD/dl/"*
 }
 
@@ -151,6 +167,9 @@ while true; do
                         ((unzip_status == 1)) && unzip_status=0 || unzip_status=1
                         ;;
                     3)
+                        ((tg_status == 1)) && tg_status=0 || tg_status=1
+                        ;;
+                    4)
                         break
                         ;;
                 esac
