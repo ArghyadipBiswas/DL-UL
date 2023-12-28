@@ -57,7 +57,7 @@ function rclone_setup() {
 
 function rclone_up() {
     rclone --config=$PWD/rclone.conf move --transfers=10 --buffer-size 256M -P "$PWD/dl/" "$1/$custom_folder"
-    rm -rf "$PWD/dl/*"
+    rm -rf "$PWD/dl/"*
     echo "Upload Done!"
 }
 
@@ -87,14 +87,14 @@ function show_zip_status() {
 }
 
 function tg_upload() {
-    find "$PWD/dl" -type f -exec python3 up.py {} \;
+    find "$PWD/dl" -type f -exec python3 up.py "{}" \;
     rm -rf "$PWD/dl/"*
 }
 
 function zipper() {
     zip -j "$PWD/zipped/$custom_filename.zip" "$PWD/dl/"*
     rm -rf "$PWD/dl/"*
-    mv "$PWD/zipped/*" "$PWD/dl/"
+    mv "$PWD/zipped/"* "$PWD/dl/"
 }
 
 function unzipper() {
@@ -135,7 +135,7 @@ while true; do
                 echo "Starting upload!"
                 sleep 1
                 tg_upload
-                rm -rf "$PWD/dl/*"
+                rm -rf "$PWD/dl/"*
                 echo "Done! Cleaning"
             done
             ;;
